@@ -1,8 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const scheduledRoute = require("./routers/scheduledRouter");
-const taskForDayRoute = require("./routers/taskForDayRouter");
-const counterDataRoute = require("./routers/counterDataRouter")
+const scheduledRoute = require("./src/routers/scheduledRouter");
+const taskForDayRoute = require("./src/routers/taskForDayRouter");
+const counterDataRoute = require("./src/routers/counterDataRouter")
 const app = express();
 
 //middleware
