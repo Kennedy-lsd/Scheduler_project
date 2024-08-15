@@ -1,15 +1,23 @@
 const express = require("express");
+const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const scheduledRoute = require("./src/routers/scheduledRouter");
 const taskForDayRoute = require("./src/routers/taskForDayRouter");
-const counterDataRoute = require("./src/routers/counterDataRouter")
+const counterDataRoute = require("./src/routers/counterDataRouter");
 const app = express();
 
-//middleware
+//Configs
+dotenv.config();
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
+});
 
-//routers
+// Routers
 app.use("/apiv1/Scheduled", scheduledRoute);
 app.use("/apiv2/TaskForDay", taskForDayRoute);
 app.use("/apiv3/counterData", counterDataRoute);
@@ -18,18 +26,35 @@ app.get("/", (req, res) => {
   res.json({ message: "Hello there" });
 });
 
-//DB
+// Database connection  (create file .env !!!)
+const mongoUri = process.env.MONGO_URI;
+
+if (!mongoUri) {
+  console.error("MONGO_URI is not defined in the environment variables");
+  process.exit(1);
+}
+
 mongoose
-  .connect(
-    "mongodb+srv://admin:RD5gtJ8IeemJ5D89@cluster0.dulcn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-  )
+  .connect(mongoUri, {
+    serverSelectionTimeoutMS: 4000,
+  })
   .then(() => {
     console.log("Connected to database");
   })
-  .catch(() => {
-    console.log("Connection faild");
+  .catch((error) => {
+    console.error("Database connection failed:", error.message);
+    process.exit(1);
   });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+// server configuration
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// shutdown
+process.on("SIGINT", async () => {
+  console.log("SIGINT signal received: closing MongoDB connection");
+  await mongoose.connection.close();
+  process.exit(0);
 });
