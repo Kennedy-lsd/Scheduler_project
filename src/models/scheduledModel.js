@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const TaskSchema = new Schema({
-  accurateTime: { type: String, required: true },
+  accurateTime: { type: String, required: true},
   taskText: { type: String, required: true },
   bgColor: { type: String, required: true },
   textColor: { type: String, required: true },

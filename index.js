@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const cors = require("cors")
 const scheduledRoute = require("./src/routers/scheduledRouter");
 const taskForDayRoute = require("./src/routers/taskForDayRouter");
 const counterDataRoute = require("./src/routers/counterDataRouter");
@@ -11,6 +12,7 @@ dotenv.config();
 
 // Middleware
 app.use(express.json());
+app.use(cors())
 app.use(express.urlencoded({ extended: false }));
 app.use((err, req, res, next) => {
   console.error(err.stack);

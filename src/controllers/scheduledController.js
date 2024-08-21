@@ -1,72 +1,87 @@
-const Scheduled = require("../models/scheduledModel");
+const ScheduledModel = require('../models/scheduledModel');
+const { matchedData, checkSchema, validationResult, body } = require('express-validator')
 
 const getScheduleds = async (req, res) => {
   try {
-    const scheduleds = await Scheduled.find({});
-    res.status(200).json(scheduleds);
+    const scheduleds = await ScheduledModel.find({})
+    if (!scheduleds) {
+      return res.status(404).json({message: "Not found"})
+    }
+    res.status(200).json(scheduleds)
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({message: error.message})
   }
-};
+}
+
 
 const getScheduled = async (req, res) => {
   try {
-    const { id } = req.params;
-    const scheduled = await Scheduled.findById(id);
-
-    if (!scheduled) {
-      return res.status(404).json({ message: "Scheduled not found" });
+    const { id } = req.params
+    const schedule = await ScheduledModel.findById(id)
+    if (!schedule) {
+      return res.status(404).send("Not found")
     }
-    res.status(200).json(scheduled);
+    res.status(200).json(schedule)
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({message: error.message})
+  }
+}
+
+
+const createSchedule = async (req, res) => {
+  try {
+    const newSchedule = new ScheduledModel(req.body);
+    await newSchedule.save();
+    return res.status(201).json(newSchedule);
+  } catch (error) {
+    return res.status(500).json({ message: `Error creating schedule: ${error.message}` });
   }
 };
 
-const createScheduled = async (req, res) => {
+const getScheduleByDate = async (req, res) => {
   try {
-    const scheduled = await Scheduled.create(req.body);
-    res.status(200).json(scheduled);
+    const schedule = await ScheduledModel.find({ date: req.params.date });
+    if (!schedule) {
+      return res.status(404).json({ message: 'Schedule not found' });
+    }
+
+    return res.status(200).json(schedule);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: `Error retrieving schedule: ${error.message}` });
   }
 };
 
-const deleteScheduled = async (req, res) => {
+const updateScheduleById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const scheduled = await Scheduled.findByIdAndDelete(id);
-
-    if (!scheduled) {
-      return res.status(404).json({ message: "Scheduled is not found" });
+    const { id } = req.params
+    const updatedSchedule = await ScheduledModel.findByIdAndUpdate(id, req.body)
+    if (!updatedSchedule) {
+      return res.status(404).json({ message: 'Schedule not found' });
     }
-
-    res.status(200).json({ message: "OK" });
+    return res.status(200).json(updatedSchedule);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: `Error updating schedule: ${error.message}` });
   }
 };
 
-const updateScheduled = async (req, res) => {
+const deleteScheduleById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const scheduled = await Scheduled.findByIdAndUpdate(id, req.body);
-
-    if (!scheduled) {
-      return res.status(400).json({ message: "Scheduled not found" });
+    const { id } = req.params
+    const result = await ScheduledModel.findByIdAndDelete(id)
+    if (!result) {
+      return res.status(404).json({ message: 'Schedule not found' });
     }
-
-    const updatedscheduled = await Scheduled.findById(id);
-    res.status(200).json(updatedscheduled);
+    return res.status(200).json({ message: 'Schedule deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: "pizdez" });
+    return res.status(500).json({ message: `Error deleting schedule: ${error.message}` });
   }
 };
 
 module.exports = {
+  createSchedule,
+  getScheduleByDate,
+  updateScheduleById,
+  deleteScheduleById,
   getScheduleds,
-  getScheduled,
-  createScheduled,
-  deleteScheduled,
-  updateScheduled,
+  getScheduled
 };
